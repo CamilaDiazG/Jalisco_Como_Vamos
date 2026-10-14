@@ -40,7 +40,9 @@ class _LoginPageState extends State<LoginPage> {
       );
       if (!mounted) return;
       if (respuesta.session == null) {
-        setState(() => _error = 'No se abrió una sesión. Intenta entrar nuevamente.');
+        setState(
+              () => _error = 'No se abrió una sesión. Intenta entrar nuevamente.',
+        );
       } else {
         _password.clear();
         // AuthGate recibe el evento de sesión y cambia de pantalla.
@@ -52,12 +54,15 @@ class _LoginPageState extends State<LoginPage> {
         _error = mensaje.contains('invalid login credentials')
             ? 'El correo o la contraseña no coinciden.'
             : mensaje.contains('email not confirmed')
-                ? 'La cuenta aún no está confirmada. Revisa el usuario de prueba en Supabase.'
-                : error.message;
+            ? 'La cuenta aún no está confirmada. Revisa el usuario de prueba en Supabase.'
+            : error.message;
       });
     } catch (_) {
       if (!mounted) return;
-      setState(() => _error = 'No se pudo conectar. Revisa tu conexión e intenta nuevamente.');
+      setState(
+            () => _error =
+        'No se pudo conectar. Revisa tu conexión e intenta nuevamente.',
+      );
     } finally {
       if (mounted) setState(() => _ocupado = false);
     }
@@ -95,10 +100,16 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height: 28),
                       const Text(
                         'Bienvenido',
-                        style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700, color: _azul),
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w700,
+                          color: _azul,
+                        ),
                       ),
                       const SizedBox(height: 8),
-                      const Text('Inicia sesión para consultar los resultados de la encuesta.'),
+                      const Text(
+                        'Inicia sesión para consultar los resultados de la encuesta.',
+                      ),
                       const SizedBox(height: 24),
                       TextFormField(
                         controller: _correo,
@@ -115,7 +126,8 @@ class _LoginPageState extends State<LoginPage> {
                         validator: (value) {
                           final correo = value?.trim() ?? '';
                           if (correo.isEmpty) return 'Escribe tu correo.';
-                          if (!correo.contains('@')) return 'Revisa el correo electrónico.';
+                          if (!correo.contains('@'))
+                            return 'Revisa el correo electrónico.';
                           return null;
                         },
                       ),
@@ -134,11 +146,22 @@ class _LoginPageState extends State<LoginPage> {
                           prefixIcon: const Icon(Icons.lock_outline),
                           border: const OutlineInputBorder(),
                           suffixIcon: IconButton(
-                            tooltip: _ocultarPassword ? 'Mostrar contraseña' : 'Ocultar contraseña',
-                            onPressed: _ocupado ? null : () {
-                              setState(() => _ocultarPassword = !_ocultarPassword);
+                            tooltip: _ocultarPassword
+                                ? 'Mostrar contraseña'
+                                : 'Ocultar contraseña',
+                            onPressed: _ocupado
+                                ? null
+                                : () {
+                              setState(
+                                    () =>
+                                _ocultarPassword = !_ocultarPassword,
+                              );
                             },
-                            icon: Icon(_ocultarPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                            icon: Icon(
+                              _ocultarPassword
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                            ),
                           ),
                         ),
                         validator: (value) => value == null || value.isEmpty
@@ -147,7 +170,10 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       if (error != null) ...[
                         const SizedBox(height: 16),
-                        Text(error, style: const TextStyle(color: Color(0xFFC60C46))),
+                        Text(
+                          error,
+                          style: const TextStyle(color: Color(0xFFC60C46)),
+                        ),
                       ],
                       const SizedBox(height: 24),
                       FilledButton(
@@ -159,10 +185,13 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         child: _ocupado
                             ? const SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                              )
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
                             : const Text('Entrar'),
                       ),
                     ],

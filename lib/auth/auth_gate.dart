@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../screens/consulta_backend_page.dart';
+import '../screens/dashboard_page.dart';
 import 'login_page.dart';
 
 /// Cambia de pantalla al entrar o salir; no deja rutas privadas detrás del login.
@@ -39,8 +39,31 @@ class _AuthGateState extends State<AuthGate> {
         if (session == null) return const LoginPage();
 
         // Cambiar de cuenta crea un estado nuevo y descarta los resultados previos.
-        return ConsultaBackendPage(key: ValueKey(session.user.id));
+        // Las rutas privadas (incluidos filtros y diálogos) pertenecen a la sesión.
+        // Al salir o cambiar de cuenta se descarta este Navigator completo.
+        return _SesionPrivada(key: ValueKey(session.user.id));
       },
     );
   }
+}
+
+class _SesionPrivada extends StatefulWidget {
+  const _SesionPrivada({super.key});
+
+  @override
+  State<_SesionPrivada> createState() => _SesionPrivadaState();
+}
+
+class _SesionPrivadaState extends State<_SesionPrivada> {
+  final _navigatorKey = GlobalKey<NavigatorState>();
+
+  @override
+  Widget build(BuildContext context) => NavigatorPopHandler<Object?>(
+    onPopWithResult: (resultado) => _navigatorKey.currentState!.pop(resultado),
+    child: Navigator(
+      key: _navigatorKey,
+      onGenerateRoute: (_) =>
+          MaterialPageRoute<void>(builder: (_) => const DashboardPage()),
+    ),
+  );
 }
