@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'auth/auth_gate.dart';
 
-void main() {
-  runApp(const MyApp());
+Future<void> main() async {
+  await Supabase.initialize(
+    url: 'https://lyzmbhfozrtfqcvmgsln.supabase.co',
+    publishableKey: 'sb_publishable_ZzijvTalC_flFivZ6s2dXg_tz5e7c3Y',
+  );
+  runApp(MyApp());
 }
 
 // ------------------------------------------------------------
@@ -10,11 +16,11 @@ void main() {
 // ------------------------------------------------------------
 
 abstract class Marca {
-  static const azul = Color(0xFF0E3B70);
-  static const rojo = Color(0xFFE10E41);
-  static const amarillo = Color(0xFFFFC629);
-  static const lima = Color(0xFFC1D100);
-  static const naranja = Color(0xFFF28C00);
+  static const azul = Color(0xFF003E79);
+  static const rojo = Color(0xFFED1849);
+  static const amarillo = Color(0xFFFFC425);
+  static const lima = Color(0xFFD5E04D);
+  static const naranja = Color(0xFFF8981D);
 
   static const fondo = Color(0xFFF4F6F9);
   static const secundario = Color(0xFF596B80);
@@ -56,7 +62,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Jalisco Cómo Vamos',
       theme: base.copyWith(
-        textTheme: GoogleFonts.montserratTextTheme(base.textTheme),
+        textTheme: GoogleFonts.robotoTextTheme(base.textTheme),
         filledButtonTheme: FilledButtonThemeData(
           style: FilledButton.styleFrom(
             backgroundColor: Marca.azul,
@@ -79,7 +85,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const DashboardPage(),
+        home: const AuthGate(),
     );
   }
 }
@@ -242,7 +248,7 @@ PreferredSizeWidget cabecera(
     )
         : null,
     title: Image.asset(
-      'assets/images/jcv_logo.png',
+        'assets/images/logo_jaliscocomovamos.png',
       width: 146,
       height: 52,
       fit: BoxFit.contain,
