@@ -35,7 +35,7 @@ class _DimensionContenidoState extends State<DimensionContenido> {
 
   Future<List<DimensionDetalle>> _cargar() => Future.wait(
     (widget.fuente == 'COMPARAR' ? ['AMG', 'TEC'] : [widget.fuente]).map(
-      (fuente) => widget.api.dimension(
+          (fuente) => widget.api.dimension(
         dimension: widget.dimension,
         fuente: fuente,
         municipio: widget.municipio,
@@ -78,7 +78,7 @@ class _DimensionContenidoState extends State<DimensionContenido> {
           titulo: sinPermiso
               ? 'Tu cuenta aún no tiene acceso'
               : sinInstalar
-              ? 'Salud aún no está conectada'
+              ? 'Esta dimensión aún no está conectada'
               : 'No se pudieron cargar los resultados',
           texto: sinPermiso
               ? 'La cuenta necesita autorización para consultar la encuesta.'
@@ -106,7 +106,7 @@ class _DimensionContenidoState extends State<DimensionContenido> {
                 detalle.preguntas.every((p) => p.estado == 'sin_datos'))
               _Mensaje(
                 titulo: detalle.fuente == 'TEC'
-                    ? 'Todavía no hay datos Tec de Salud'
+                    ? 'Todavía no hay datos Tec de ${detalle.nombre}'
                     : 'Sin respuestas para esta selección',
                 texto: 'Prueba con otros filtros o consulta los resultados del AMG.',
               )
@@ -117,8 +117,11 @@ class _DimensionContenidoState extends State<DimensionContenido> {
           ],
           Text(
             'Los porcentajes incluyen No sabe/No contestó. '
-            'AMG utiliza el factor de expansión de la encuesta. '
-            'No se calcula un índice de salud ni se muestran respuestas individuales.',
+                'AMG utiliza el factor de expansión de la encuesta. '
+                '${widget.dimension == 'educacion_trabajo'
+                ? 'Las actividades de estudio y trabajo pueden coincidir en una persona. No aplica también permanece en el denominador. '
+                : ''}'
+                'No se calcula un índice ni se muestran respuestas individuales.',
             style: Theme.of(context).textTheme.bodySmall,
           ),
           if (widget.fuente == 'COMPARAR')
@@ -173,12 +176,12 @@ class _TarjetaPregunta extends StatelessWidget {
                     content: SingleChildScrollView(
                       child: Text(
                         'Variable: ${pregunta.variable}\n'
-                        'Fuente: ${pregunta.fuente}\n'
-                        'Versión: ${pregunta.versionMetodologia}\n\n'
-                        '${pregunta.denominador}\n\n'
-                        '${pregunta.ponderado ? 'Cada categoría suma FACTOR y divide entre el peso total seleccionado.' : 'Cada respuesta tiene peso 1.'}\n\n'
-                        'Se requieren al menos ${pregunta.minimoValidas} respuestas válidas. '
-                        'Este umbral inicial no garantiza anonimato ni precisión estadística.',
+                            'Fuente: ${pregunta.fuente}\n'
+                            'Versión: ${pregunta.versionMetodologia}\n\n'
+                            '${pregunta.denominador}\n\n'
+                            '${pregunta.ponderado ? 'Cada categoría suma FACTOR y divide entre el peso total seleccionado.' : 'Cada respuesta tiene peso 1.'}\n\n'
+                            'Se requieren al menos ${pregunta.minimoValidas} respuestas válidas. '
+                            'Este umbral inicial no garantiza anonimato ni precisión estadística.',
                       ),
                     ),
                     actions: [
@@ -224,7 +227,7 @@ class _TarjetaPregunta extends StatelessWidget {
               const SizedBox(height: 5),
               Semantics(
                 label:
-                    '${categoria.etiqueta}: ${categoria.porcentaje!.toStringAsFixed(2)} por ciento',
+                '${categoria.etiqueta}: ${categoria.porcentaje!.toStringAsFixed(2)} por ciento',
                 child: ExcludeSemantics(
                   child: LinearProgressIndicator(
                     value: categoria.porcentaje! / 100,

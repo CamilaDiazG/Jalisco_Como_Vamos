@@ -446,11 +446,16 @@ class _DashboardPageState extends State<DashboardPage> {
       _actualizar(_filtros.copyWith(fuente: fuente));
 
   Widget _contenido() {
-    if (_filtros.tema == 'Salud' && _catalogos != null) {
+    final dimension = switch (_filtros.tema) {
+      'Salud' => 'salud',
+      'Educación y trabajo' => 'educacion_trabajo',
+      _ => null,
+    };
+    if (dimension != null && _catalogos != null) {
       return DimensionContenido(
         key: ObjectKey(_consulta),
         api: _api,
-        dimension: 'salud',
+        dimension: dimension,
         fuente: _filtros.fuente == Fuente.comparar
             ? 'COMPARAR'
             : _filtros.fuente == Fuente.tec
@@ -468,7 +473,7 @@ class _DashboardPageState extends State<DashboardPage> {
       return EstadoConsulta(
         titulo: 'Esta dimensión aún no está disponible',
         etiquetaAccion: 'Ver bienestar subjetivo',
-        mensaje: 'Ya puedes consultar Bienestar subjetivo y Salud. Las demás dimensiones se conectarán a sus preguntas originales.',
+        mensaje: 'Ya puedes consultar Bienestar subjetivo, Educación y trabajo y Salud. Las demás dimensiones se conectarán a sus preguntas originales.',
         reintentar: () =>
             _actualizar(_filtros.copyWith(tema: 'Bienestar subjetivo')),
       );
@@ -503,7 +508,7 @@ class _DashboardPageState extends State<DashboardPage> {
           );
         }
         final resumen = snapshot.data!;
-        if (_filtros.fuente == Fuente.comparar){
+        if (_filtros.fuente == Fuente.comparar) {
           return ComparacionContenido(resumen: resumen);
         }
         final indicadores = _filtros.fuente == Fuente.tec
