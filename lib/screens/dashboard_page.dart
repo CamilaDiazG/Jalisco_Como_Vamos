@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../data/jcv_api.dart';
+import 'dimension_contenido.dart';
 
 abstract class Marca {
   static const azul = Color(0xFF003E79);
@@ -18,10 +19,10 @@ abstract class Marca {
 }
 
 TextStyle estilo(
-  double size, {
-  FontWeight peso = FontWeight.w400,
-  Color color = Marca.azul,
-}) {
+    double size, {
+      FontWeight peso = FontWeight.w400,
+      Color color = Marca.azul,
+    }) {
   return TextStyle(
     fontSize: size,
     fontWeight: peso,
@@ -121,10 +122,10 @@ PreferredSizeWidget cabecera(BuildContext context, {bool volver = false}) {
     titleSpacing: volver ? 0 : 20,
     leading: volver
         ? IconButton(
-            tooltip: 'Volver',
-            icon: const Icon(Icons.arrow_back, color: Marca.azul),
-            onPressed: () => Navigator.pop(context),
-          )
+      tooltip: 'Volver',
+      icon: const Icon(Icons.arrow_back, color: Marca.azul),
+      onPressed: () => Navigator.pop(context),
+    )
         : null,
     title: Image.asset(
       'assets/images/logo_jaliscocomovamos.png',
@@ -278,9 +279,9 @@ class NotaDatos extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       '${indicadores.ponderado ? 'Resultados ponderados' : 'Respuestas de participantes'}'
-      ' · ${indicadores.nMuestra} cuestionarios.\n'
-      'Porcentajes sobre el total, incluyendo NS/NC.'
-      '${indicadores.tieneMuestraInsuficiente ? '\n—: muestra insuficiente para publicar este porcentaje.' : ''}',
+          ' · ${indicadores.nMuestra} cuestionarios.\n'
+          'Porcentajes sobre el total, incluyendo NS/NC.'
+          '${indicadores.tieneMuestraInsuficiente ? '\n—: muestra insuficiente para publicar este porcentaje.' : ''}',
       style: estilo(11, color: Marca.secundario),
     );
   }
@@ -405,8 +406,9 @@ class _DashboardPageState extends State<DashboardPage> {
       ]);
       return ResumenEncuesta(amg: resultados[0], tec: resultados[1]);
     }
-    if (filtros.fuente == Fuente.tec)
+    if (filtros.fuente == Fuente.tec) {
       return ResumenEncuesta(tec: await consultar('TEC'));
+    }
     return ResumenEncuesta(amg: await consultar('AMG'));
   }
 
@@ -444,11 +446,29 @@ class _DashboardPageState extends State<DashboardPage> {
       _actualizar(_filtros.copyWith(fuente: fuente));
 
   Widget _contenido() {
+    if (_filtros.tema == 'Salud' && _catalogos != null) {
+      return DimensionContenido(
+        key: ObjectKey(_consulta),
+        api: _api,
+        dimension: 'salud',
+        fuente: _filtros.fuente == Fuente.comparar
+            ? 'COMPARAR'
+            : _filtros.fuente == Fuente.tec
+            ? 'TEC'
+            : 'AMG',
+        municipio: _filtros.municipio == 'Todo el AMG'
+            ? null
+            : _catalogos!.codigoMunicipio(_filtros.municipio),
+        grupoEdad: _filtros.edad == 'Todos'
+            ? null
+            : _catalogos!.codigoEdad(_filtros.edad),
+      );
+    }
     if (_filtros.tema != 'Bienestar subjetivo') {
       return EstadoConsulta(
         titulo: 'Esta dimensión aún no está disponible',
         etiquetaAccion: 'Ver bienestar subjetivo',
-        mensaje: 'Por ahora están conectados satisfacción con la vida, felicidad y salud mental, en Bienestar subjetivo.',
+        mensaje: 'Ya puedes consultar Bienestar subjetivo y Salud. Las demás dimensiones se conectarán a sus preguntas originales.',
         reintentar: () =>
             _actualizar(_filtros.copyWith(tema: 'Bienestar subjetivo')),
       );
@@ -483,8 +503,9 @@ class _DashboardPageState extends State<DashboardPage> {
           );
         }
         final resumen = snapshot.data!;
-        if (_filtros.fuente == Fuente.comparar)
+        if (_filtros.fuente == Fuente.comparar){
           return ComparacionContenido(resumen: resumen);
+        }
         final indicadores = _filtros.fuente == Fuente.tec
             ? resumen.tec!
             : resumen.amg!;
@@ -629,10 +650,10 @@ class _DashboardPageState extends State<DashboardPage> {
                   children: ['Salud', 'Seguridad', 'Transporte']
                       .map(
                         (tema) => OutlinedButton(
-                          onPressed: () => _abrirFiltros(tema: tema),
-                          child: Text(tema, style: estilo(12)),
-                        ),
-                      )
+                      onPressed: () => _abrirFiltros(tema: tema),
+                      child: Text(tema, style: estilo(12)),
+                    ),
+                  )
                       .toList(),
                 ),
               ],
@@ -722,7 +743,7 @@ class ResumenContenido extends StatelessWidget {
 
     final grafica = Semantics(
       label:
-          'Satisfacción con la vida: ${indicadores.satisfaccion == null ? 'porcentaje no disponible' : porcentaje(indicadores.satisfaccion)}',
+      'Satisfacción con la vida: ${indicadores.satisfaccion == null ? 'porcentaje no disponible' : porcentaje(indicadores.satisfaccion)}',
       child: SizedBox(
         width: 132,
         height: 132,
@@ -735,7 +756,7 @@ class ResumenContenido extends StatelessWidget {
                     ? 'Porcentaje no disponible'
                     : porcentaje(indicadores.satisfaccion),
                 value:
-                    (indicadores.satisfaccion ?? 0) /
+                (indicadores.satisfaccion ?? 0) /
                     100, // Sin dato: anillo vacío, texto —.
                 strokeWidth: 14,
                 color: Marca.amarillo,
@@ -1044,7 +1065,7 @@ class ComparacionContenido extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 'AMG utiliza porcentajes ponderados. Tec describe a quienes participan; '
-                'no representa a toda la comunidad. Ambos porcentajes incluyen NS/NC en el total.',
+                    'no representa a toda la comunidad. Ambos porcentajes incluyen NS/NC en el total.',
                 style: estilo(11),
               ),
             ],
@@ -1094,7 +1115,7 @@ class BarraDato extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       label:
-          '$fuente: ${valor == null ? 'porcentaje no disponible' : porcentaje(valor)}',
+      '$fuente: ${valor == null ? 'porcentaje no disponible' : porcentaje(valor)}',
       child: Row(
         children: [
           Expanded(
@@ -1107,7 +1128,7 @@ class BarraDato extends StatelessWidget {
               ),
               child: FractionallySizedBox(
                 widthFactor:
-                    (valor ?? 0) / 100, // Sin dato: barra vacía, texto —.
+                (valor ?? 0) / 100, // Sin dato: barra vacía, texto —.
                 child: Container(
                   decoration: BoxDecoration(
                     color: color,
@@ -1172,7 +1193,7 @@ class _FiltrosPageState extends State<FiltrosPage> {
     final edades = [
       'Todos',
       ...widget.catalogos.gruposEdad.map(
-        (opcion) => opcion.nombre.replaceFirst(' años', ''),
+            (opcion) => opcion.nombre.replaceFirst(' años', ''),
       ),
     ];
     return Scaffold(
@@ -1223,10 +1244,10 @@ class _FiltrosPageState extends State<FiltrosPage> {
                     items: municipios
                         .map(
                           (municipio) => DropdownMenuItem(
-                            value: municipio,
-                            child: Text(municipio),
-                          ),
-                        )
+                        value: municipio,
+                        child: Text(municipio),
+                      ),
+                    )
                         .toList(),
                     onChanged: (value) {
                       if (value == null) return;
@@ -1331,7 +1352,7 @@ class _FiltrosPageState extends State<FiltrosPage> {
                     Expanded(
                       child: Text(
                         'Se muestran resultados agregados.\n'
-                        'Nunca respuestas individuales.',
+                            'Nunca respuestas individuales.',
                         style: estilo(11),
                       ),
                     ),

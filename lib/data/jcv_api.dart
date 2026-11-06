@@ -1,6 +1,8 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'jcv_models.dart';
+import 'dimension_models.dart';
+export 'dimension_models.dart';
 export 'jcv_models.dart';
 
 /// Solo lectura de agregados. Requiere una sesión de usuario autorizada.
@@ -39,5 +41,30 @@ class JcvApi {
           (row) => IndicadorJcv.fromJson(Map<String, dynamic>.from(row as Map)),
     )
         .toList();
+  }
+
+  Future<DimensionDetalle> dimension({
+    String dimension = 'salud',
+    String fuente = 'AMG',
+    int? municipio,
+    int? grupoEdad,
+  }) async {
+    _exigirSesion();
+    final data = await client.rpc(
+      'jcv_dimension',
+      params: {
+        'p_dimension': dimension,
+        'p_fuente': fuente,
+        'p_municipio': municipio,
+        'p_grupo_edad': grupoEdad,
+      },
+    );
+    final detalle = DimensionDetalle.fromJson(
+      Map<String, dynamic>.from(data as Map),
+    );
+    if (detalle.id != dimension || detalle.fuente != fuente) {
+      throw const FormatException('El resultado no corresponde a la consulta.');
+    }
+    return detalle;
   }
 }

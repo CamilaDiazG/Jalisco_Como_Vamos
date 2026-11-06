@@ -126,8 +126,9 @@ class _LoginPageState extends State<LoginPage> {
                         validator: (value) {
                           final correo = value?.trim() ?? '';
                           if (correo.isEmpty) return 'Escribe tu correo.';
-                          if (!correo.contains('@'))
+                          if (!correo.contains('@')) {
                             return 'Revisa el correo electrónico.';
+                          }
                           return null;
                         },
                       ),
