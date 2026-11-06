@@ -121,6 +121,12 @@ class _DimensionContenidoState extends State<DimensionContenido> {
                 '${widget.dimension == 'educacion_trabajo'
                 ? 'Las actividades de estudio y trabajo pueden coincidir en una persona. No aplica también permanece en el denominador. '
                 : ''}'
+                '${widget.dimension == 'seguridad'
+                ? 'Estos resultados describen percepciones, no tasas reales de delitos. '
+                : ''}'
+                '${widget.dimension == 'transporte'
+                ? 'No se desplaza se conserva como una categoría visible del tiempo de traslado. '
+                : ''}'
                 'No se calcula un índice ni se muestran respuestas individuales.',
             style: Theme.of(context).textTheme.bodySmall,
           ),

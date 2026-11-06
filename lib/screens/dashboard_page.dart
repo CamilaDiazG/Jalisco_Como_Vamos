@@ -449,6 +449,11 @@ class _DashboardPageState extends State<DashboardPage> {
     final dimension = switch (_filtros.tema) {
       'Salud' => 'salud',
       'Educación y trabajo' => 'educacion_trabajo',
+      'Seguridad' => 'seguridad',
+      'Tiempo libre' => 'tiempo_libre',
+      'Hogar y familia' => 'hogar_familia',
+      'Comunidad' => 'comunidad',
+      'Transporte' => 'transporte',
       _ => null,
     };
     if (dimension != null && _catalogos != null) {
@@ -473,7 +478,7 @@ class _DashboardPageState extends State<DashboardPage> {
       return EstadoConsulta(
         titulo: 'Esta dimensión aún no está disponible',
         etiquetaAccion: 'Ver bienestar subjetivo',
-        mensaje: 'Ya puedes consultar Bienestar subjetivo, Educación y trabajo y Salud. Las demás dimensiones se conectarán a sus preguntas originales.',
+        mensaje: 'Esta dimensión todavía no está conectada a sus preguntas originales.',
         reintentar: () =>
             _actualizar(_filtros.copyWith(tema: 'Bienestar subjetivo')),
       );
