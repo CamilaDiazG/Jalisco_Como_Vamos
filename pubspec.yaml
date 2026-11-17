@@ -12,6 +12,9 @@ dependencies:
   cupertino_icons: ^1.0.8
   google_fonts: 8.2.1
   supabase_flutter: ^2.18.3
+  flutter_stripe: ^15.0.0
+  speech_to_text: ^7.5.0
+  uuid: ^4.6.0
 
 dev_dependencies:
   flutter_test:

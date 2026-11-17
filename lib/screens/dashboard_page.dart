@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../data/jcv_api.dart';
+import 'account_page.dart';
+import 'donations_page.dart';
 import 'dimension_contenido.dart';
+import 'preguntas_page.dart';
+import 'participa_page.dart';
 
 abstract class Marca {
   static const azul = Color(0xFF003E79);
@@ -52,26 +56,22 @@ extension FuenteNombre on Fuente {
 
 class Filtros {
   final Fuente fuente;
-  final String municipio;
   final String edad;
   final String tema;
 
   const Filtros({
     this.fuente = Fuente.amg,
-    this.municipio = 'Todo el AMG',
     this.edad = 'Todos',
     this.tema = 'Bienestar subjetivo',
   });
 
   Filtros copyWith({
     Fuente? fuente,
-    String? municipio,
     String? edad,
     String? tema,
   }) {
     return Filtros(
       fuente: fuente ?? this.fuente,
-      municipio: municipio ?? this.municipio,
       edad: edad ?? this.edad,
       tema: tema ?? this.tema,
     );
@@ -141,7 +141,9 @@ PreferredSizeWidget cabecera(BuildContext context, {bool volver = false}) {
           tooltip: 'Perfil',
           style: IconButton.styleFrom(backgroundColor: Marca.azulClaro),
           icon: const Icon(Icons.person_outline, color: Marca.azul),
-          onPressed: () => mostrarPerfil(context),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const AccountPage()),
+          ),
         ),
       ),
     ],
@@ -319,40 +321,6 @@ class EstadoConsulta extends StatelessWidget {
   );
 }
 
-Future<void> mostrarPerfil(BuildContext context) async {
-  final salir = await showDialog<bool>(
-    context: context,
-    useRootNavigator: false,
-    builder: (dialogContext) => AlertDialog(
-      title: const Text('Tu cuenta'),
-      content: Text(
-        Supabase.instance.client.auth.currentUser?.email ?? 'Sesión iniciada',
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(dialogContext, false),
-          child: const Text('Volver'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.pop(dialogContext, true),
-          child: const Text('Cerrar sesión'),
-        ),
-      ],
-    ),
-  );
-  if (salir != true || !context.mounted) return;
-  try {
-    await Supabase.instance.client.auth.signOut(scope: SignOutScope.local);
-  } catch (_) {
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('No se pudo cerrar sesión. Intenta nuevamente.'),
-      ),
-    );
-  }
-}
-
 // ------------------------------------------------------------
 // DASHBOARD PRINCIPAL
 // ------------------------------------------------------------
@@ -385,9 +353,6 @@ class _DashboardPageState extends State<DashboardPage> {
     // Esta caché pertenece exclusivamente al dashboard de la sesión actual.
     if (!mounted) return const ResumenEncuesta();
     _catalogos = catalogos;
-    final municipio = filtros.municipio == 'Todo el AMG'
-        ? null
-        : catalogos.codigoMunicipio(filtros.municipio);
     final grupoEdad = filtros.edad == 'Todos'
         ? null
         : catalogos.codigoEdad(filtros.edad);
@@ -395,7 +360,7 @@ class _DashboardPageState extends State<DashboardPage> {
     Future<Indicadores> consultar(String fuente) async => Indicadores(
       await _api.resumen(
         fuente: fuente,
-        municipio: municipio,
+        municipio: null,
         grupoEdad: grupoEdad,
       ),
     );
@@ -466,9 +431,7 @@ class _DashboardPageState extends State<DashboardPage> {
             : _filtros.fuente == Fuente.tec
             ? 'TEC'
             : 'AMG',
-        municipio: _filtros.municipio == 'Todo el AMG'
-            ? null
-            : _catalogos!.codigoMunicipio(_filtros.municipio),
+        municipio: null,
         grupoEdad: _filtros.edad == 'Todos'
             ? null
             : _catalogos!.codigoEdad(_filtros.edad),
@@ -563,18 +526,6 @@ class _DashboardPageState extends State<DashboardPage> {
                     child: OutlinedButton(
                       onPressed: () => _abrirFiltros(),
                       child: Text(
-                        _filtros.municipio,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: estilo(12, peso: FontWeight.w600),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => _abrirFiltros(),
-                      child: Text(
                         _filtros.edadVisible,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -611,11 +562,8 @@ class _DashboardPageState extends State<DashboardPage> {
                   borderRadius: BorderRadius.circular(20),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(20),
-                    onTap: () => mostrarAviso(
-                      context,
-                      'Consulta por voz',
-                      'Este acceso está listo en la interfaz. '
-                          'Falta conectar reconocimiento de voz y el servicio de IA.',
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(builder: (_) => const PreguntasPage()),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(12),
@@ -637,7 +585,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Consulta el bienestar por voz',
+                                  'Consulta por texto o voz',
                                   style: estilo(12, color: Marca.secundario),
                                 ),
                               ],
@@ -687,17 +635,13 @@ class _DashboardPageState extends State<DashboardPage> {
               _cambiarFuente(Fuente.comparar);
               break;
             case 2:
-              mostrarAviso(
-                context,
-                'Participa',
-                'El módulo de encuesta Tec está pendiente de integración.',
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const ParticipaPage()),
               );
               break;
             case 3:
-              mostrarAviso(
-                context,
-                'Apoya al observatorio',
-                'La pasarela de donativos está pendiente de integración.',
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const DonationsPage()),
               );
               break;
           }
@@ -1196,10 +1140,6 @@ class _FiltrosPageState extends State<FiltrosPage> {
 
   @override
   Widget build(BuildContext context) {
-    final municipios = [
-      'Todo el AMG',
-      ...widget.catalogos.municipios.map((opcion) => opcion.nombre),
-    ];
     final edades = [
       'Todos',
       ...widget.catalogos.gruposEdad.map(
@@ -1232,42 +1172,6 @@ class _FiltrosPageState extends State<FiltrosPage> {
                     _borrador = _borrador.copyWith(fuente: value);
                   });
                 },
-              ),
-              const SizedBox(height: 20),
-              _label('Municipio'),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Marca.borde),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _borrador.municipio,
-                    isExpanded: true,
-                    style: estilo(14),
-                    icon: const Icon(
-                      Icons.keyboard_arrow_down,
-                      color: Marca.azul,
-                    ),
-                    items: municipios
-                        .map(
-                          (municipio) => DropdownMenuItem(
-                        value: municipio,
-                        child: Text(municipio),
-                      ),
-                    )
-                        .toList(),
-                    onChanged: (value) {
-                      if (value == null) return;
-
-                      setState(() {
-                        _borrador = _borrador.copyWith(municipio: value);
-                      });
-                    },
-                  ),
-                ),
               ),
               const SizedBox(height: 20),
               _label('Edad'),

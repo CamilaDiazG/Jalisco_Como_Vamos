@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../data/jcv_api.dart';
+import 'distribucion_chart.dart';
 
 /// Se integra en el dashboard; conserva su cabecera, filtros y navegación.
 class DimensionContenido extends StatefulWidget {
@@ -26,6 +27,7 @@ class DimensionContenido extends StatefulWidget {
 
 class _DimensionContenidoState extends State<DimensionContenido> {
   late Future<List<DimensionDetalle>> _consulta;
+  VistaDistribucion _vista = VistaDistribucion.barras;
 
   @override
   void initState() {
@@ -91,6 +93,11 @@ class _DimensionContenidoState extends State<DimensionContenido> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          Wrap(spacing: 8, children: VistaDistribucion.values.map((vista) => ChoiceChip(
+            label: Text(vista.name), selected: _vista == vista,
+            onSelected: (_) => setState(() => _vista = vista),
+          )).toList()),
+          const SizedBox(height: 12),
           for (final detalle in snapshot.data!) ...[
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
@@ -112,7 +119,7 @@ class _DimensionContenidoState extends State<DimensionContenido> {
               )
             else
               for (final pregunta in detalle.preguntas)
-                _TarjetaPregunta(pregunta: pregunta),
+                _TarjetaPregunta(pregunta: pregunta, vista: _vista),
             const SizedBox(height: 12),
           ],
           Text(
@@ -145,7 +152,8 @@ class _DimensionContenidoState extends State<DimensionContenido> {
 
 class _TarjetaPregunta extends StatelessWidget {
   final PreguntaDistribucion pregunta;
-  const _TarjetaPregunta({required this.pregunta});
+  final VistaDistribucion vista;
+  const _TarjetaPregunta({required this.pregunta, required this.vista});
 
   @override
   Widget build(BuildContext context) {
@@ -211,42 +219,7 @@ class _TarjetaPregunta extends StatelessWidget {
               ),
             )
           else
-            for (final categoria in pregunta.categorias) ...[
-              const SizedBox(height: 8),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(
-                      categoria.etiqueta,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    '${categoria.porcentaje!.toStringAsFixed(2)}%',
-                    style: Theme.of(context).textTheme.bodySmall
-                        ?.copyWith(fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 5),
-              Semantics(
-                label:
-                '${categoria.etiqueta}: ${categoria.porcentaje!.toStringAsFixed(2)} por ciento',
-                child: ExcludeSemantics(
-                  child: LinearProgressIndicator(
-                    value: categoria.porcentaje! / 100,
-                    minHeight: 6,
-                    borderRadius: BorderRadius.circular(8),
-                    color: categoria.esAusencia
-                        ? scheme.outline
-                        : scheme.primary,
-                    backgroundColor: scheme.primary.withValues(alpha: .09),
-                  ),
-                ),
-              ),
-            ],
+            DistribucionChart(categorias: pregunta.categorias, vista: vista),
           const SizedBox(height: 14),
           Text(
             '${pregunta.nMuestra} cuestionarios · ${pregunta.nValidas} respuestas válidas',

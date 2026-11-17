@@ -32,7 +32,7 @@ class JcvApi {
       'jcv_resumen_bienestar',
       params: {
         'p_fuente': fuente,
-        'p_municipio': municipio,
+        'p_municipio': null,
         'p_grupo_edad': grupoEdad,
       },
     );
@@ -55,7 +55,7 @@ class JcvApi {
       params: {
         'p_dimension': dimension,
         'p_fuente': fuente,
-        'p_municipio': municipio,
+        'p_municipio': null,
         'p_grupo_edad': grupoEdad,
       },
     );
