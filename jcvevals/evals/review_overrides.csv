@@ -1,0 +1,61 @@
+id,question,expected_answer,expected_sources,review_status,review_note
+CD-01,,,,corrected,Reclassified from trend to age_comparison (cross-sectional 2026 wave); figures verified by Diego (team report).
+CD-02,,,,corrected,Reclassified from trend to age_comparison (cross-sectional 2026 wave); figures verified by Diego (team report).
+CD-03,,,,corrected,Reclassified from trend to age_comparison (cross-sectional 2026 wave); figures verified by Diego (team report).
+CD-04,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:T_Q_23_4 by Diego (team report).
+CD-05,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:T_Q_23_7 and Cruces_de_Variables:RESUMEN:Estrato by Diego (team report).
+CD-06,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:T_Q_57_1 by Diego (team report).
+CD-07,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:T_Q_57_3 and Cruces_de_Variables:RESUMEN:Q_71 by Diego (team report).
+CD-08,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:T_Q_58_5 by Diego (team report).
+CD-09,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:T_Q_58_1 and Cruces_de_Variables:RESUMEN:Estrato by Diego (team report).
+CD-10,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:Q_36 and Cruces_de_Variables:RESUMEN:Q_71 by Diego (team report).
+CD-11,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:Q_38 by Diego (team report).
+CD-12,,,,corrected,Reclassified from trend to age_comparison (cross-sectional 2026 wave); figures verified by Diego (team report).
+CD-13,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:Q_69 and Cruces_de_Variables:RESUMEN:Estrato by Diego (team report).
+CD-14,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:Q_41 by Diego (team report).
+CD-15,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:Q_6 and Cruces_de_Variables:RESUMEN:Q_2 by Diego (team report).
+CD-16,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:T_Q_13_1 and Cruces_de_Variables:RESUMEN:Estrato by Diego (team report).
+CD-17,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:T_Q_13_2 and Cruces_de_Variables:RESUMEN:Q_71 by Diego (team report).
+CD-18,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:Q_16 by Diego (team report).
+CD-19,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:Q_15 by Diego (team report).
+CD-20,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:T_Q_18_1 by Diego (team report).
+KC-01,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:T_Q_23_7 by Camila (team report).
+KC-02,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:T_Q_23_6 by Camila (team report).
+KC-03,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:T_Q_24_1 by Camila (team report).
+KC-04,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:Q_29_7 and Cruces_de_Variables:RESUMEN:Q_29_5 and Cruces_de_Variables:RESUMEN:Q_29_4 by Camila (team report).
+KC-05,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:T_Q_57_1 and Cruces_de_Variables:RESUMEN:T_Q_57_3 by Camila (team report).
+KC-06,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:Q_37 by Camila (team report).
+KC-07,,,,discarded,Discarded for overlap with CD-11 on Q_38 and the 45.4% non-consumption figure; questions are not exact duplicates.
+KC-08,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:Q_40 and Cruces_de_Variables:RESUMEN:Q_39 by Camila (team report).
+KC-09,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:Q_34 by Camila (team report).
+KC-10,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:T_Q_11_6 by Camila (team report).
+KC-11,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:T_Q_59_1 and Cruces_de_Variables:RESUMEN:T_Q_60_1 by Camila (team report).
+KC-12,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:T_Q_59_3 and Cruces_de_Variables:RESUMEN:T_Q_60_3 by Camila (team report).
+KC-13,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:Q_28 and Cruces_de_Variables:RESUMEN:Q_71 by Camila (team report).
+KC-14,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:Q_22 by Camila (team report).
+KC-15,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:T_Q_23_2 by Camila (team report).
+KC-16,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:T_Q_64_4 and Cruces_de_Variables:RESUMEN:T_Q_64_1 by Camila (team report).
+KC-17,,,,corrected,Reclassified from trend to age_comparison (cross-sectional 2026 wave); figures verified by Camila (team report).
+KC-18,,,,corrected,Reclassified from trend to age_comparison (cross-sectional 2026 wave); figures verified by Camila (team report).
+KC-19,,,,corrected,Reclassified from trend to age_comparison (cross-sectional 2026 wave); figures verified by Camila (team report).
+KC-20,,,,accepted,Verified against Cruces_de_Variables:RESUMEN:Q_42 by Camila (team report).
+DD-01,,,Cruces_de_Variables:RESUMEN:Q_6,corrected,Workbook source labels standardized; figures verified by Karlo (team report). Actual backend chunk IDs need confirmation.
+DD-02,,,Cruces_de_Variables:RESUMEN:Q_25,corrected,Workbook source labels standardized; figures verified by Karlo (team report). Actual backend chunk IDs need confirmation.
+DD-03,,,Cruces_de_Variables:RESUMEN:Q_46,corrected,Workbook source labels standardized; figures verified by Karlo (team report). Actual backend chunk IDs need confirmation.
+DD-04,,,Cruces_de_Variables:RESUMEN:Q_69,corrected,Workbook source labels standardized; figures verified by Karlo (team report). Actual backend chunk IDs need confirmation.
+DD-05,,,Cruces_de_Variables:RESUMEN:Q_70recode,corrected,Workbook source labels standardized; figures verified by Karlo (team report). Actual backend chunk IDs need confirmation.
+DD-06,,,Cruces_de_Variables:RESUMEN:T_Q_65_12,corrected,Workbook source labels standardized; figures verified by Karlo (team report). Actual backend chunk IDs need confirmation.
+DD-07,,,Cruces_de_Variables:RESUMEN:Q_46;Cruces_de_Variables:RESUMEN:Q_48,corrected,Workbook source labels standardized; figures verified by Karlo (team report). Actual backend chunk IDs need confirmation.
+DD-08,,,Cruces_de_Variables:RESUMEN:Q_32,corrected,Workbook source labels standardized; figures verified by Karlo (team report). Actual backend chunk IDs need confirmation.
+DD-09,,,Cruces_de_Variables:RESUMEN:Q_35,corrected,Workbook source labels standardized; figures verified by Karlo (team report). Actual backend chunk IDs need confirmation.
+DD-10,,,Cruces_de_Variables:RESUMEN:T_Q_63_1;Cruces_de_Variables:RESUMEN:T_Q_63_4;Cruces_de_Variables:RESUMEN:T_Q_63_3,corrected,Workbook source labels standardized; figures verified by Karlo (team report). Actual backend chunk IDs need confirmation. Removed parenthetical range note from sources.
+DD-11,"¿Qué municipio reporta mayor amenaza de delito en su colonia, incluyendo El Salto?",No tengo datos suficientes en las fuentes disponibles para responder.,Cruces_de_Variables:RESUMEN:Q_45;Cruces_de_Variables:RESUMEN:Q_2,corrected,Workbook source labels standardized; figures verified by Karlo (team report). Actual backend chunk IDs need confirmation. El Salto n=23 (<30); expected safe abstention.
+DD-12,,,Cruces_de_Variables:RESUMEN:T_Q_51_4;Cruces_de_Variables:RESUMEN:Q_71,corrected,Workbook source labels standardized; figures verified by Karlo (team report). Actual backend chunk IDs need confirmation.
+DD-13,,,Cruces_de_Variables:RESUMEN:Q_41;Cruces_de_Variables:RESUMEN:Q_71,corrected,Workbook source labels standardized; figures verified by Karlo (team report). Actual backend chunk IDs need confirmation.
+DD-14,,,Cruces_de_Variables:RESUMEN:T_Q_43_1;Cruces_de_Variables:RESUMEN:Q_2,corrected,Workbook source labels standardized; figures verified by Karlo (team report). Actual backend chunk IDs need confirmation.
+DD-15,,,Cruces_de_Variables:RESUMEN:T_Q_65_10;Cruces_de_Variables:RESUMEN:T_Q_65_5,corrected,Workbook source labels standardized; figures verified by Karlo (team report). Actual backend chunk IDs need confirmation.
+DD-16,,,Cruces_de_Variables:RESUMEN:Q_36;Cruces_de_Variables:RESUMEN:Estrato,corrected,Workbook source labels standardized; figures verified by Karlo (team report). Actual backend chunk IDs need confirmation.
+DD-17,,,Cruces_de_Variables:RESUMEN:T_Q_13_1;Cruces_de_Variables:RESUMEN:Q_72recode,corrected,Workbook source labels standardized; figures verified by Karlo (team report). Actual backend chunk IDs need confirmation. Reclassified from trend to age_comparison.
+DD-18,,,Cruces_de_Variables:RESUMEN:T_Q_13_2;Cruces_de_Variables:RESUMEN:Q_72recode,corrected,Workbook source labels standardized; figures verified by Karlo (team report). Actual backend chunk IDs need confirmation. Reclassified from trend to age_comparison.
+DD-19,,,Cruces_de_Variables:RESUMEN:Q_25;Cruces_de_Variables:RESUMEN:Q_72recode,corrected,Workbook source labels standardized; figures verified by Karlo (team report). Actual backend chunk IDs need confirmation. Reclassified from trend to age_comparison.
+DD-20,,,Cruces_de_Variables:RESUMEN:Q_72recode;FACTOR,corrected,Workbook source labels standardized; figures verified by Karlo (team report). Actual backend chunk IDs need confirmation. FACTOR is metadata and was not found as a RESUMEN source label; its citation remains unresolved.

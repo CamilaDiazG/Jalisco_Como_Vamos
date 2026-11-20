@@ -1,0 +1,6 @@
+description: Jalisco Cómo Vamos AI evaluation — survey corpus, July–August 2026
+prompts:
+  - "{{question}}"
+providers:
+  - file://evals/provider.js
+tests: file://evals/tests.yaml

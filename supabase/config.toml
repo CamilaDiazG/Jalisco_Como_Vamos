@@ -3,3 +3,8 @@ verify_jwt = true
 
 [functions.stripe-webhook]
 verify_jwt = false
+
+# Auth is checked with Supabase Auth getUser inside the function, including
+# projects using asymmetric signing keys. Never remove that check.
+[functions.ask]
+verify_jwt = false
