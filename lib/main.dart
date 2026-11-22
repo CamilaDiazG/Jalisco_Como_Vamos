@@ -1,11 +1,15 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'auth/auth_gate.dart';
+import 'data/https_only.dart';
 import 'screens/dashboard_page.dart';
 
 Future<void> main() async {
+  HttpOverrides.global = HttpsOnlyOverrides();
   WidgetsFlutterBinding.ensureInitialized();
   await Supabase.initialize(
     url: 'https://lyzmbhfozrtfqcvmgsln.supabase.co',
