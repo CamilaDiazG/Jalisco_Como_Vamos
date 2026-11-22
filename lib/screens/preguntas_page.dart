@@ -7,6 +7,8 @@ class _Voz {
   static final speech = SpeechToText();
   static VoidCallback? actualizar;
   static ValueChanged<String>? error;
+  // Se pide una vez por sesión de la app, antes del permiso del sistema.
+  static bool avisoAceptado = false;
   static Future<bool> iniciar() => speech.initialize(
     onStatus: (_) => actualizar?.call(),
     onError: (_) => error?.call('No se pudo reconocer la frase. Puedes escribirla.'),
@@ -40,8 +42,33 @@ class _PreguntasPageState extends State<PreguntasPage> with WidgetsBindingObserv
     if (state != AppLifecycleState.resumed) _Voz.speech.cancel();
   }
 
+  Future<bool> _aceptarAvisoVoz() async {
+    if (_Voz.avisoAceptado) return true;
+    final acepto = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Aviso de privacidad del micrófono'),
+        content: const Text(
+          'Tu voz la recibe y la convierte en texto el servicio de voz de tu teléfono '
+          '(normalmente Google), que puede procesarla en sus servidores.\n\n'
+          'Jalisco Cómo Vamos no recibe ni guarda tu audio. Solo recibe el texto '
+          'de tu pregunta, y únicamente si pulsas "Enviar pregunta".\n\n'
+          'Si no quieres usar el micrófono, puedes escribir tu pregunta.',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Prefiero escribir')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Aceptar y usar micrófono')),
+        ],
+      ),
+    );
+    _Voz.avisoAceptado = acepto == true;
+    return _Voz.avisoAceptado;
+  }
+
   Future<void> _escuchar() async {
     if (_Voz.speech.isListening) { await _Voz.speech.stop(); return; }
+    if (!await _aceptarAvisoVoz() || !mounted) return;
     setState(() { _iniciando = true; _error = null; });
     try {
       final disponible = await _Voz.iniciar();
