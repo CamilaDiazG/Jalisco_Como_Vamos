@@ -43,16 +43,17 @@ test('malformed, wrong-population aggregates and duplicate IDs fail closed', asy
   await assert.rejects(loadCorpus(async (name, params) => name === 'jcv_dimension'
     ? { id: params.p_dimension, fuente: 'AMG', preguntas: [] } : [row, row]));
 });
-function fixture({ user = true, reader = true, permissionError = null, select, env = () => 'test' } = {}) {
+function fixture({ user = true, reader = true, permissionError = null, select, log = () => {}, aggregateError = false, env = () => 'test' } = {}) {
   const calls = [];
   const client = { auth: { getUser: async () => ({ data: { user: user ? { id: 'reader' } : null } }) },
     rpc: async (name, params) => {
       calls.push(name);
       if (name === 'jcv_ask_authorized') return { data: reader, error: permissionError };
       if (name === 'jcv_catalogos') return { data: {} };
+      if (aggregateError) return { error: { message: 'private data' } };
       return { data: name === 'jcv_resumen_bienestar' ? [row] : { id: params.p_dimension, fuente: 'AMG', preguntas: [] } };
     } };
-  const handler = createHandler({ createClient: () => client, env,
+  const handler = createHandler({ createClient: () => client, env, log,
     select: select ?? (async () => ({ sufficient: true, citations: [sources()[0].id] })) });
   return { handler, calls };
 }
@@ -107,13 +108,15 @@ const geminiResponse = selection => ({ candidates: [{ finishReason: 'STOP',
 test('Gemini receives retrieved sources, schema and key only in header', async () => {
   const selected = { sufficient: true, citations: [sources()[0].id] };
   const result = await selectSources('felicidad', sources(), 'test-key', async (url, options) => {
-    assert.equal(url, 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent');
+    assert.equal(url, 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent');
     assert.equal(options.headers['x-goog-api-key'], 'test-key');
     const payload = JSON.parse(options.body);
     const input = JSON.parse(payload.contents[0].parts[0].text);
     assert.deepEqual(Object.keys(input).sort(), ['question', 'sources']);
     assert.deepEqual(input.sources.map(s => s.id), sources().map(s => s.id));
     assert.equal(payload.generationConfig.responseMimeType, 'application/json');
+    assert.ok(!('thinkingConfig' in payload.generationConfig));
+    assert.ok(!('temperature' in payload.generationConfig));
     assert.deepEqual(payload.generationConfig.responseJsonSchema.properties.citations.items.enum, [sources()[0].id]);
     assert.ok(payload.systemInstruction.parts[0].text.includes('Ante duda abstente'));
     assert.ok(!options.body.includes('test-key'));
@@ -207,4 +210,40 @@ test('original evaluator adapter sends auth/apikey and does not send ground trut
     globalThis.fetch = originalFetch;
     names.forEach((name, i) => { if (saved[i] === undefined) delete process.env[name]; else process.env[name] = saved[i]; });
   }
+});
+
+test('safe diagnostics distinguish aggregate failure before Gemini', async () => {
+  const records = [];
+  const f = fixture({ aggregateError: true, log: record => records.push(record) });
+  assert.equal((await f.handler(request())).status, 502);
+  assert.deepEqual(records, [{ event: 'ask_failure', stage: 'aggregate_load_and_validation', status: 502,
+    gemini_called: false, google_http_status: null, google_error_code: null, google_error_status: null }]);
+});
+
+test('safe Gemini diagnostics contain codes but no secret or content', async () => {
+  for (const googleStatus of ['INVALID_ARGUMENT', 'secret-key-question-answer']) {
+    const records = [];
+    const f = fixture({ log: record => records.push(record), select: (q, s, key, _, observe) =>
+      selectSources(q, s, key, async () => Response.json({ error: { code: 400, status: googleStatus,
+        message: 'secret-key-question-answer', details: [{ secret: 'never-log' }] } }, { status: 400 }), observe) });
+    const response = await f.handler(request());
+    assert.equal(response.status, 502);
+    assert.deepEqual(records, [{ event: 'ask_failure', stage: 'gemini_request_and_response', status: 502,
+      gemini_called: true, google_http_status: 400, google_error_code: 400,
+      google_error_status: googleStatus === 'INVALID_ARGUMENT' ? googleStatus : null }]);
+    assert.ok(!JSON.stringify(records).includes('secret'));
+    assert.ok(!JSON.stringify(records).includes('felicidad'));
+  }
+});
+
+test('network failures have no fabricated Google status and logger errors do not mask 502', async () => {
+  const records = [];
+  const select = (q, s, key, _, observe) => selectSources(q, s, key,
+    async () => { throw new Error('secret network details'); }, observe);
+  const f = fixture({ select, log: record => records.push(record) });
+  assert.equal((await f.handler(request())).status, 502);
+  assert.equal(records[0].google_http_status, null);
+  assert.equal(records[0].gemini_called, true);
+  const brokenLogger = fixture({ select, log: () => { throw new Error('logger unavailable'); } });
+  assert.equal((await brokenLogger.handler(request())).status, 502);
 });

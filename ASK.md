@@ -17,9 +17,9 @@ de lector para inspeccionar la base remota. No se modificó ningún CSV ni Flutt
 
 Antes de aplicar la migración, ejecutar `supabase/inspect_ask_backend.sql` en el
 SQL Editor del proyecto y revisar el resultado. Debe confirmarse que
-`jcv_private.lectores.user_id` es UUID y que la presencia de la fila autoriza
+`jcv_private.lectores.usuario_id` es UUID y que la presencia de la fila autoriza
 lectura. Si usa otra columna o condiciones de vigencia, adaptar **013** a esa
-definición real. La migración aborta si no existe `user_id uuid`; no crea ni
+definición real. La migración aborta si no existe `usuario_id uuid`; no crea ni
 modifica lectores. Las RPC originales deben mantener sus controles. `ask` exige
 también que `jcv_catalogos` permita acceso antes de consultar el corpus.
 
@@ -82,7 +82,7 @@ Sin coincidencias se abstiene sin llamar al proveedor. Si alguna fuente
 recuperada está suprimida, también se abstiene. Esto privilegia prudencia sobre
 cobertura y puede producir abstenciones adicionales.
 
-El modelo `gemini-2.5-flash-lite` recibe solo las fuentes recuperadas y selecciona
+El modelo `gemini-3.5-flash-lite` recibe solo las fuentes recuperadas y selecciona
 IDs con JSON Schema estricto. El backend valida nuevamente los IDs y ensambla
 extractos de los agregados: no retorna prosa libre ni números del modelo.
 Así cada cifra publicada procede literalmente de una fuente validada.
@@ -95,7 +95,7 @@ las demás solicitudes. La pertinencia semántica y resistencia a instrucciones
 adversarias necesitan la evaluación real; las pruebas locales no la certifican.
 No se implementó índice persistente, sinónimos exhaustivos ni límite de gasto
 por lector. Flutter ahora usa `ask` y muestra respuesta, fuentes y cuota agotada. La integración de
-este endpoint conserva el dashboard existente. Consulta README.md para el despliegue con Gemini 2.5 Flash-Lite en Free tier.
+este endpoint conserva el dashboard existente. Consulta README.md para el despliegue con Gemini 3.5 Flash-Lite en Free tier.
 
 ## Secreto y despliegue (PowerShell)
 
@@ -170,3 +170,28 @@ El runner original conserva `--full`, pero no se ejecutó. El CLI auxiliar
 Pendiente en entorno real: inspección SQL, despliegue, sesión de no-lector/lector,
 agregados reales, secreto del proveedor y smoke CD-06. Las pruebas mock no
 sustituyen estas verificaciones.
+
+La migración 013 corregida crea public.jcv_ask_authorized() sin argumentos y devuelve boolean. Es idempotente mediante CREATE OR REPLACE y permisos repetibles. Después de aplicarla, ejecutar supabase/test_ask_authorized.sql en SQL Editor: lector=true, no lector=false, sin identidad=false, ejecución anon=false y authenticated=true. El script usa ROLLBACK y no altera lectores. Para comprobar idempotencia, ejecutar 013 dos veces y repetir la prueba.
+
+## Diagnóstico seguro de errores 502
+
+Solo `handler.mjs` devuelve explícitamente HTTP 502, desde su catch general.
+La etapa controlada distingue `client_init`, `authentication`,
+`reader_authorization`, `catalog`, `request_body`,
+`aggregate_load_and_validation`, `retrieval`, `provider_configuration`,
+`gemini_request_and_response` y `render_selection`.
+
+Cada excepción registra `event=ask_failure`, `stage`, `status`, `gemini_called`,
+`google_http_status`, `google_error_code` y `google_error_status`. Los códigos
+numéricos se validan y el estado de Google se limita a una lista cerrada.
+No se registran excepciones completas, mensajes del proveedor, stacks,
+cabeceras, claves, tokens, case_id, preguntas ni respuestas. Si no hubo respuesta
+HTTP del proveedor, sus códigos quedan null; no significa cuota agotada.
+HTTP 429 conserva su tratamiento específico. Los rechazos normales 400/401/403
+/503 y las abstenciones no se convierten en 502.
+
+Para reproducir: enviar una única pregunta desde una sesión de lector en Flutter
+y consultar los eventos `ask_failure` posteriores al despliegue. La CLI actual
+usa la tabla `logs` con `source = 'function_logs'` (no una tabla independiente
+llamada function_logs). Las pruebas locales verifican que los datos sensibles
+no aparezcan en el registro; no sustituyen la petición autenticada real.

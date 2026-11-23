@@ -171,9 +171,9 @@ inválidas. Probar además dictado, permisos y envío en un dispositivo Android.
 La tabla de avance del 6 de noviembre es histórica; esta sección actualiza el
 estado de la fase 7 sin afirmar que se haya completado la validación integral.
 
-### Desplegar `ask` con Gemini 2.5 Flash-Lite
+### Desplegar `ask` con Gemini 3.5 Flash-Lite
 
-El proveedor usa Gemini Developer API, modelo fijo `gemini-2.5-flash-lite`, con
+El proveedor usa Gemini Developer API, modelo fijo `gemini-3.5-flash-lite`, con
 salida JSON estructurada. Gemini selecciona fuentes; la respuesta final sigue
 construyéndose exclusivamente con agregados validados de Supabase. Se conservan
 las abstenciones y la supresión de muestras pequeñas. La clave solo se lee en
@@ -193,7 +193,7 @@ en Flutter.
    `jcv_ask_authorized`, y que la cuenta de prueba pertenezca a los lectores.
    Si falta la última RPC, revisa y aplica completo
    `supabase/migrations/013_ask_reader.sql` en SQL Editor sobre el backend existente.
-   Requiere `jcv_private.lectores.user_id` de tipo UUID. No reinstales los datos ni
+   Requiere `jcv_private.lectores.usuario_id` de tipo UUID. No reinstales los datos ni
    ejecutes todas las migraciones a ciegas; `ASK.md` detalla la inspección previa.
 4. Desde la raíz, con la CLI de Supabase disponible, despliega únicamente `ask`:
 
@@ -222,3 +222,19 @@ como abstenciones satisfactorias.
 Las pruebas locales de backend pasan (17 casos). Las pruebas de Flutter incluyen
 el estado de cuota agotada; el despliegue y la consulta real con Gemini requieren
 el secreto y una sesión autorizada y no se han ejecutado en esta revisión.
+
+### Cambio a Gemini 3.5 Flash-Lite
+
+`ask` usa `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent`.
+Se retiraron `thinkingBudget: 0` y la temperatura fijada de la configuración
+anterior; se conserva la salida JSON con esquema y el límite de 1000 tokens.
+No cambiaron la clave, la autorización, los agregados ni las muestras pequeñas.
+Referencia: [modelo oficial](https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash-lite).
+
+El 23 de noviembre de 2026 a las 20:33:56 UTC se verificó una petición mínima
+sintética desde el entorno de `ask`, con la misma `GEMINI_API_KEY`: HTTP 200 y
+texto generado. Solo se registraron el estado y un booleano; la comprobación
+temporal se retiró antes del despliegue final. Esto verifica el modelo y la clave,
+no sustituye la prueba autenticada de “felicidad” desde Flutter.
+Las 20 pruebas locales pasan, incluyendo endpoint/modelo, esquema JSON,
+autorización, muestras pequeñas y diagnóstico seguro.

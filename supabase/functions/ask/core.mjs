@@ -101,8 +101,10 @@ export class QuotaExceededError extends Error {
   constructor() { super('AI quota exceeded'); }
 }
 
-export async function selectSources(question, retrieved, apiKey, fetcher = fetch) {
-  const response = await fetcher('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent', {
+export const GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent';
+
+export async function selectSources(question, retrieved, apiKey, fetcher = fetch, observe = () => {}) {
+  const response = await fetcher(GEMINI_ENDPOINT, {
     method: 'POST', signal: AbortSignal.timeout(30000),
     headers: { 'x-goog-api-key': apiKey, 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -110,7 +112,7 @@ export async function selectSources(question, retrieved, apiKey, fetcher = fetch
       contents: [{ role: 'user', parts: [{ text: JSON.stringify({ question,
         sources: retrieved.map(({ id, available, excerpt }) => ({ id, available, excerpt })) }) }] }],
       generationConfig: {
-        temperature: 0, maxOutputTokens: 1000, thinkingConfig: { thinkingBudget: 0 },
+        maxOutputTokens: 1000,
         responseMimeType: 'application/json',
         responseJsonSchema: { type: 'object', additionalProperties: false,
           required: ['sufficient', 'citations'], properties: {
@@ -120,6 +122,18 @@ export async function selectSources(question, retrieved, apiKey, fetcher = fetch
       },
     }),
   });
+  observe({ http_status: response.status, error_code: null, error_status: null });
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null);
+    const code = payload?.error?.code;
+    const status = payload?.error?.status;
+    const allowed = ['INVALID_ARGUMENT', 'FAILED_PRECONDITION', 'OUT_OF_RANGE', 'UNAUTHENTICATED',
+      'PERMISSION_DENIED', 'NOT_FOUND', 'ALREADY_EXISTS', 'RESOURCE_EXHAUSTED', 'CANCELLED',
+      'ABORTED', 'DEADLINE_EXCEEDED', 'INTERNAL', 'UNAVAILABLE', 'DATA_LOSS', 'UNKNOWN', 'UNIMPLEMENTED'];
+    observe({ http_status: response.status,
+      error_code: Number.isInteger(code) && code >= 100 && code <= 599 ? code : null,
+      error_status: allowed.includes(status) ? status : null });
+  }
   // Do not retry automatically: free-tier limits may be daily or per-minute.
   if (response.status === 429) throw new QuotaExceededError();
   if (!response.ok) throw new Error('AI provider unavailable');
