@@ -1,4 +1,4 @@
-# IA de Jalisco Cómo Vamos: primera versión
+﻿# IA de Jalisco Cómo Vamos: primera versión
 
 ## Revisión y requisitos pendientes
 
@@ -82,7 +82,7 @@ Sin coincidencias se abstiene sin llamar al proveedor. Si alguna fuente
 recuperada está suprimida, también se abstiene. Esto privilegia prudencia sobre
 cobertura y puede producir abstenciones adicionales.
 
-El modelo `gpt-4o-mini-2024-07-18` recibe solo las fuentes recuperadas y selecciona
+El modelo `gemini-2.5-flash-lite` recibe solo las fuentes recuperadas y selecciona
 IDs con JSON Schema estricto. El backend valida nuevamente los IDs y ensambla
 extractos de los agregados: no retorna prosa libre ni números del modelo.
 Así cada cifra publicada procede literalmente de una fuente validada.
@@ -94,15 +94,15 @@ deterministas para grupos/periodos comunes y un control semántico del modelo pa
 las demás solicitudes. La pertinencia semántica y resistencia a instrucciones
 adversarias necesitan la evaluación real; las pruebas locales no la certifican.
 No se implementó índice persistente, sinónimos exhaustivos ni límite de gasto
-por lector. Flutter sigue usando `ask-data`; cambiar la interfaz queda fuera de
-este endpoint y conserva el dashboard existente.
+por lector. Flutter ahora usa `ask` y muestra respuesta, fuentes y cuota agotada. La integración de
+este endpoint conserva el dashboard existente. Consulta README.md para el despliegue con Gemini 2.5 Flash-Lite en Free tier.
 
 ## Secreto y despliegue (PowerShell)
 
-Configurar **OPENAI_API_KEY** en Supabase → Edge Functions → Secrets. No ponerlo
+Configurar **GEMINI_API_KEY** en Supabase → Edge Functions → Secrets. No ponerlo
 en Flutter, GitHub, código, argumentos de terminal ni archivos versionados.
 Alternativamente, con un archivo privado fuera del repositorio que contenga
-`OPENAI_API_KEY=...`, usar el comando `secrets set` siguiente. Ese archivo debe
+`GEMINI_API_KEY=...`, usar el comando `secrets set` siguiente. Ese archivo debe
 crearlo el operador; no existe ni se ha configurado un secreto desde esta sesión.
 
 Después de revisar el SQL anterior y ajustar 013 si corresponde:
@@ -132,7 +132,7 @@ de despliegue de `ask`. No reinstalar las cargas ni alterar el dashboard.
 Referencias de implementación:
 [Auth getUser](https://supabase.com/docs/reference/javascript/auth-getuser),
 [configuración de funciones](https://supabase.com/docs/guides/functions/function-configuration),
-[Chat Completions y JSON Schema](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create).
+[Gemini y JSON Schema](https://ai.google.dev/gemini-api/docs/structured-output).
 
 ## Pruebas
 

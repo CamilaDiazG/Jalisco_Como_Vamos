@@ -1,6 +1,6 @@
-import test from 'node:test';
+﻿import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ABSTENTION, buildSources, retrieve, renderSelection, selectSources, loadCorpus, unsupportedScope } from '../supabase/functions/ask/core.mjs';
+import { ABSTENTION, buildSources, retrieve, renderSelection, selectSources, loadCorpus, unsupportedScope, QuotaExceededError } from '../supabase/functions/ask/core.mjs';
 import { createHandler } from '../supabase/functions/ask/handler.mjs';
 import provider from './provider.js';
 import originalProvider from '../jcvevals/evals/provider.js';
@@ -43,7 +43,7 @@ test('malformed, wrong-population aggregates and duplicate IDs fail closed', asy
   await assert.rejects(loadCorpus(async (name, params) => name === 'jcv_dimension'
     ? { id: params.p_dimension, fuente: 'AMG', preguntas: [] } : [row, row]));
 });
-function fixture({ user = true, reader = true, permissionError = null, select } = {}) {
+function fixture({ user = true, reader = true, permissionError = null, select, env = () => 'test' } = {}) {
   const calls = [];
   const client = { auth: { getUser: async () => ({ data: { user: user ? { id: 'reader' } : null } }) },
     rpc: async (name, params) => {
@@ -52,7 +52,7 @@ function fixture({ user = true, reader = true, permissionError = null, select } 
       if (name === 'jcv_catalogos') return { data: {} };
       return { data: name === 'jcv_resumen_bienestar' ? [row] : { id: params.p_dimension, fuente: 'AMG', preguntas: [] } };
     } };
-  const handler = createHandler({ createClient: () => client, env: () => 'test',
+  const handler = createHandler({ createClient: () => client, env,
     select: select ?? (async () => ({ sufficient: true, citations: [sources()[0].id] })) });
   return { handler, calls };
 }
@@ -101,15 +101,74 @@ test('upstream failures are errors, not successful abstentions', async () => {
   assert.equal(response.status, 502);
   assert.ok(!(await response.text()).includes('secret'));
 });
-test('model receives only retrieved sources, not case IDs; refusal abstains', async () => {
-  await selectSources('felicidad', sources(), 'test-key', async (_url, options) => {
+const geminiResponse = selection => ({ candidates: [{ finishReason: 'STOP',
+  content: { parts: [{ text: JSON.stringify(selection) }] } }] });
+
+test('Gemini receives retrieved sources, schema and key only in header', async () => {
+  const selected = { sufficient: true, citations: [sources()[0].id] };
+  const result = await selectSources('felicidad', sources(), 'test-key', async (url, options) => {
+    assert.equal(url, 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent');
+    assert.equal(options.headers['x-goog-api-key'], 'test-key');
     const payload = JSON.parse(options.body);
-    assert.equal(payload.store, false);
-    assert.deepEqual(JSON.parse(payload.messages[1].content).sources.map(s => s.id), sources().map(s => s.id));
-    return Response.json({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify({ sufficient: true, citations: [sources()[0].id] }) } }] });
+    const input = JSON.parse(payload.contents[0].parts[0].text);
+    assert.deepEqual(Object.keys(input).sort(), ['question', 'sources']);
+    assert.deepEqual(input.sources.map(s => s.id), sources().map(s => s.id));
+    assert.equal(payload.generationConfig.responseMimeType, 'application/json');
+    assert.deepEqual(payload.generationConfig.responseJsonSchema.properties.citations.items.enum, [sources()[0].id]);
+    assert.ok(payload.systemInstruction.parts[0].text.includes('Ante duda abstente'));
+    assert.ok(!options.body.includes('test-key'));
+    return Response.json(geminiResponse(selected));
   });
-  const selection = await selectSources('felicidad', sources(), 'test', async () => Response.json({ choices: [{ finish_reason: 'length' }] }));
-  assert.equal(renderSelection(selection, sources()).answer, ABSTENTION);
+  assert.deepEqual(result, selected);
+});
+
+test('Gemini blocked, truncated, malformed and invented citations abstain', async () => {
+  for (const data of [
+    { promptFeedback: { blockReason: 'SAFETY' } },
+    { candidates: [{ finishReason: 'MAX_TOKENS' }] },
+    { candidates: [{ finishReason: 'STOP', content: { parts: [{ text: 'invalid JSON' }] } }] },
+    { candidates: [{ finishReason: 'STOP' }] },
+    geminiResponse({ sufficient: true, citations: ['invented'] }),
+    geminiResponse({ sufficient: false, citations: [] }),
+  ]) {
+    const selection = await selectSources('felicidad', sources(), 'test', async () => Response.json(data));
+    assert.equal(renderSelection(selection, sources()).answer, ABSTENTION);
+  }
+});
+
+test('quota exhaustion is a sanitized 429, without retries or successful abstention', async () => {
+  let calls = 0;
+  const f = fixture({ select: (q, s, key) => selectSources(q, s, key, async () => {
+    calls++;
+    return new Response('secret provider body', { status: 429 });
+  }) });
+  const response = await f.handler(request());
+  assert.equal(response.status, 429);
+  const data = await response.json();
+  assert.equal(data.code, 'AI_QUOTA_EXCEEDED');
+  assert.ok(!('answer' in data));
+  assert.ok(!JSON.stringify(data).includes('secret'));
+  assert.equal(calls, 1);
+  await assert.rejects(selectSources('q', sources(), 'test', async () => new Response('', { status: 429 })), QuotaExceededError);
+});
+
+test('Gemini errors and network timeouts remain service errors', async () => {
+  for (const fetcher of [async () => new Response('secret', { status: 500 }),
+    async () => { throw new DOMException('secret', 'TimeoutError'); }]) {
+    const f = fixture({ select: (q, s, key) => selectSources(q, s, key, fetcher) });
+    const response = await f.handler(request());
+    assert.equal(response.status, 502);
+    assert.ok(!(await response.text()).includes('secret'));
+  }
+});
+
+test('only GEMINI_API_KEY configures provider; missing key fails closed', async () => {
+  const names = [];
+  const f = fixture({ env: name => { names.push(name); return name === 'GEMINI_API_KEY' ? undefined : 'test'; },
+    select: () => { throw new Error('must not call'); } });
+  assert.equal((await f.handler(request())).status, 503);
+  assert.ok(names.includes('GEMINI_API_KEY'));
+  assert.ok(!names.includes('OPENAI_API_KEY'));
 });
 test('evaluation adapter preserves actual retrieval and sends only question/case_id', async () => {
   const env = { SUPABASE_URL: 'https://example.supabase.co', SUPABASE_PUBLISHABLE_KEY: 'public', JCV_ACCESS_TOKEN: 'session' };

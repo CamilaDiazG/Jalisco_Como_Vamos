@@ -1,4 +1,4 @@
-import { loadCorpus, retrieve, renderSelection, selectSources, unsupportedScope } from './core.mjs';
+import { loadCorpus, retrieve, renderSelection, selectSources, unsupportedScope, QuotaExceededError } from './core.mjs';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -56,11 +56,14 @@ export function createHandler({ createClient, env, select = selectSources }) {
       if (!retrieved.length || retrieved.some(s => !s.available) || unsupportedScope(body.question, catalog.data)) {
         return reply(200, renderSelection(null, retrieved));
       }
-      const apiKey = env('OPENAI_API_KEY');
+      const apiKey = env('GEMINI_API_KEY');
       if (!apiKey) return reply(503, { error: 'Proveedor de IA sin configurar' });
       const selection = await select(body.question, retrieved, apiKey);
       return reply(200, renderSelection(selection, retrieved));
-    } catch {
+    } catch (error) {
+      if (error instanceof QuotaExceededError) {
+        return reply(429, { code: 'AI_QUOTA_EXCEEDED', error: 'La cuota de IA está agotada temporalmente. Intenta más tarde.' });
+      }
       // Do not log questions, session tokens, credentials, or provider bodies.
       return reply(502, { error: 'No se pudo completar la consulta' });
     }
