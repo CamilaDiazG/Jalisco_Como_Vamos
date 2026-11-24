@@ -17,6 +17,8 @@ class _Voz {
   );
 }
 
+void reiniciarAvisoVoz() => _Voz.avisoAceptado = false;
+
 class PreguntasPage extends StatefulWidget {
   const PreguntasPage({super.key, this.invoke});
   final Future<FunctionResponse> Function(String, Map<String, dynamic>)? invoke;
