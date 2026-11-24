@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'auth/auth_gate.dart';
 import 'data/https_only.dart';
+import 'data/secure_session_storage.dart';
 import 'screens/dashboard_page.dart';
 
 Future<void> main() async {
@@ -14,6 +15,9 @@ Future<void> main() async {
   await Supabase.initialize(
     url: 'https://lyzmbhfozrtfqcvmgsln.supabase.co',
     publishableKey: 'sb_publishable_ZzijvTalC_flFivZ6s2dXg_tz5e7c3Y',
+    authOptions: FlutterAuthClientOptions(
+      localStorage: SecureSessionStorage(persistSessionKey: 'sb-lyzmbhfozrtfqcvmgsln-auth-token'),
+    ),
   );
   runApp(const MyApp());
 }
