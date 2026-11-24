@@ -15,6 +15,7 @@ dependencies:
   flutter_stripe: ^15.0.0
   speech_to_text: ^7.5.0
   uuid: ^4.6.0
+  flutter_secure_storage: ^11.2.0
 
 dev_dependencies:
   flutter_test:
