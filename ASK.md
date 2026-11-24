@@ -82,7 +82,7 @@ Sin coincidencias se abstiene sin llamar al proveedor. Si alguna fuente
 recuperada está suprimida, también se abstiene. Esto privilegia prudencia sobre
 cobertura y puede producir abstenciones adicionales.
 
-El modelo `gemini-3.5-flash-lite` recibe solo las fuentes recuperadas y selecciona
+El modelo `gemini-3.5-flash-lite` recibe la pregunta y las fuentes recuperadas y selecciona
 IDs con JSON Schema estricto. El backend valida nuevamente los IDs y ensambla
 extractos de los agregados: no retorna prosa libre ni números del modelo.
 Así cada cifra publicada procede literalmente de una fuente validada.

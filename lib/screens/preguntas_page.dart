@@ -60,8 +60,9 @@ class _PreguntasPageState extends State<PreguntasPage>
         content: const Text(
           'Tu voz la recibe y la convierte en texto el servicio de voz de tu teléfono '
           '(normalmente Google), que puede procesarla en sus servidores.\n\n'
-          'Jalisco Cómo Vamos no recibe ni guarda tu audio. Solo recibe el texto '
-          'de tu pregunta, y únicamente si pulsas "Enviar pregunta".\n\n'
+          'Jalisco Cómo Vamos no recibe ni guarda tu audio. Si pulsas "Enviar pregunta", '
+          'el texto llega a nuestro servidor y a Gemini, de Google, para buscar la respuesta. '
+          'No incluyas datos personales.\n\n'
           'Si no quieres usar el micrófono, puedes escribir tu pregunta.',
         ),
         actions: [
@@ -257,7 +258,7 @@ class _PreguntasPageState extends State<PreguntasPage>
           ),
         ),
         const Text(
-          'Al pulsar el micrófono se escucha una frase. Revisa el texto antes de enviarlo. La app no guarda audio; el servicio de voz del dispositivo puede procesarlo en sus servidores.',
+          'Al pulsar el micrófono se escucha una frase. Revisa el texto antes de enviarlo. La app no guarda audio; el servicio de voz del dispositivo puede procesarlo en sus servidores. Al enviar, el texto llega a nuestro servidor y a Gemini, de Google. No incluyas datos personales.',
         ),
         Row(
           children: [
