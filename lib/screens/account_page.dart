@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'preguntas_page.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
@@ -106,6 +109,28 @@ class _AccountPageState extends State<AccountPage> {
     );
   }
 
+  Future<void> _withdrawMicrophone() async {
+    reiniciarAvisoVoz();
+    await _perform(
+      () => const MethodChannel('jcv/settings').invokeMethod<void>('openAppSettings'),
+      'En Permisos, desactiva el micrófono. La app volverá a mostrar el aviso antes de usarlo.',
+    );
+  }
+
+  Future<void> _deleteAccount() async {
+    if (_busy) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      useRootNavigator: false,
+      builder: (_) => const _DeleteAccountDialog(),
+    );
+    if (!mounted || confirmed != true) return;
+    await _perform(() async {
+      await _client.functions.invoke('delete-account');
+      await _client.auth.signOut(scope: SignOutScope.local);
+    }, 'Cuenta eliminada.');
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = _client.auth.currentUser;
@@ -152,6 +177,18 @@ class _AccountPageState extends State<AccountPage> {
                 const SizedBox(height: 12),
                 OutlinedButton(onPressed: _busy ? null : _changePassword, child: const Text('Actualizar contraseña')),
               ]),
+              const SizedBox(height: 12),
+              _card([
+                const Text('Tus datos y permisos', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _blue)),
+                const SizedBox(height: 12),
+                OutlinedButton(onPressed: _busy ? null : _withdrawMicrophone, child: const Text('Retirar permiso del micrófono')),
+                const SizedBox(height: 10),
+                OutlinedButton(
+                  onPressed: _busy ? null : _deleteAccount,
+                  style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFFB00020)),
+                  child: const Text('Eliminar mi cuenta'),
+                ),
+              ]),
               if (_error != null) Padding(padding: const EdgeInsets.only(top: 12), child: Text(_error!, style: const TextStyle(color: Color(0xFFB00020)))),
               if (_message != null) Padding(padding: const EdgeInsets.only(top: 12), child: Text(_message!, style: const TextStyle(color: _blue))),
               if (_busy) const Padding(padding: EdgeInsets.all(16), child: Center(child: CircularProgressIndicator())),
@@ -169,5 +206,51 @@ class _AccountPageState extends State<AccountPage> {
     padding: const EdgeInsets.all(18),
     decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: children),
+  );
+}
+
+class _DeleteAccountDialog extends StatefulWidget {
+  const _DeleteAccountDialog();
+
+  @override
+  State<_DeleteAccountDialog> createState() => _DeleteAccountDialogState();
+}
+
+class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
+  final _confirmation = TextEditingController();
+
+  @override
+  void dispose() {
+    _confirmation.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    title: const Text('Eliminar mi cuenta'),
+    content: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Se borran tu cuenta, tus accesos y tus respuestas. No se puede deshacer. '
+          'Los registros de donaciones se conservan sin estar ligados a ti.',
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _confirmation,
+          autocorrect: false,
+          onChanged: (_) => setState(() {}),
+          decoration: const InputDecoration(labelText: 'Escribe ELIMINAR', border: OutlineInputBorder()),
+        ),
+      ],
+    ),
+    actions: [
+      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
+      TextButton(
+        onPressed: _confirmation.text == 'ELIMINAR' ? () => Navigator.pop(context, true) : null,
+        child: const Text('Eliminar'),
+      ),
+    ],
   );
 }

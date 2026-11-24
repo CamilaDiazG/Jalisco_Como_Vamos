@@ -1,6 +1,9 @@
 [functions.create-donation-intent]
 verify_jwt = true
 
+[functions.delete-account]
+verify_jwt = true
+
 [functions.stripe-webhook]
 verify_jwt = false
 
